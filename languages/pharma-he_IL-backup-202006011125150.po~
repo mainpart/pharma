@@ -1,0 +1,144 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Pharma\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-05-14 03:39+0000\n"
+"PO-Revision-Date: 2020-06-01 11:24+0000\n"
+"Last-Translator: \n"
+"Language-Team: Hebrew\n"
+"Language: he_IL\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.3.3; wp-5.1.5"
+
+#. Author of the plugin
+msgid "Automattic"
+msgstr ""
+
+#. Name of the plugin
+msgid "Pharma"
+msgstr ""
+
+# לעבור לאזור מעקבים אפשר מדף קשר של הומאופת
+# Переход на страницу консультаций должен быть от доктора
+msgid "Referer of the page should be from a doctor or the client page"
+msgstr "ניתן לעבור לאיזור המנוי אך ורק מדף קשר של ההומאופת"
+
+# Новая консультация
+# "מעקב חדש"
+msgid "New consultation"
+msgstr "מעקב חדש "
+
+# Окончание подписки на сайте консультаций с доктором
+msgid "End of subscription"
+msgstr "סיום המנוי"
+
+# Платежи
+msgid "Invoices"
+msgstr "תשלומים"
+
+# Платёж
+msgid "Invoice"
+msgstr "תשלום"
+
+# Консультации
+msgid "Consultations"
+msgstr ""
+
+# Консультация
+msgid "Consultation"
+msgstr "מעקב"
+
+# Статус
+msgid "Status"
+msgstr "סטטוס"
+
+# Статус оплаты
+msgid "Payment status"
+msgstr "סטטוס תשלום"
+
+# Добавить консультацию
+msgid "Add consultation"
+msgstr "להוסיף מעקב חדש "
+
+msgid "Extend subscription"
+msgstr "לחדש מנוי"
+
+msgid "Open new subscription"
+msgstr "לפתוח מנוי חדש"
+
+msgid "Homeopath"
+msgstr "הומאופת"
+
+msgid "Client"
+msgstr "משתמש"
+
+# שולם עד
+# Оплачено по
+msgid "Paid until "
+msgstr "שולם עד "
+
+# Доступ к комментариям закрыт. Пользователю необходимо обновить абонементное обслуживание на сайте!
+msgid "Access to comments closed. You neen to renew subscription!"
+msgstr "אין כניסה לאיזור המעקבים. יש לחדש את המנוי!"
+
+# Консультация с пользователем
+# אזור מעקב
+msgid "User consultation "
+msgstr "אזור מעקב"
+
+# Данная форма может располагаться только в записях из категории
+# תרשמו לאתר לקבלת אזור אישי למעקבים
+msgid "This is not an apropriate place of form"
+msgstr "לא ניתן למקם כאן את הטופס"
+
+# Не найден пользователь с заданным идентификатором
+# המשתמש לא נמצא
+msgid "User not found"
+msgstr "משתמש לא נמצא"
+
+# Имя пользователя:
+# שם המשתמש
+msgid "User name: "
+msgstr "שם המשתמש "
+
+# Детали платежа (дата, сумма, способ):
+# פרטי תשלום (תאריך, סכום, אופן)
+msgid "Payment details (date, amount, payment system)"
+msgstr "פרטי התשלום (סוג תשלום, תאריך, סכום)"
+
+# הודעת על חידוש המנוי
+# Уведомление о подписке пользователя
+msgid "Notification of subscribing "
+msgstr "הודעה על חידוש המנוי"
+
+# Недостаточно прав для совершения операции
+msgid "Access denied"
+msgstr "אין הרשאה"
+
+# שולם עד
+# Оплачено по
+msgid "Payment due date "
+msgstr "שולם עד "
+
+# אירעה שגיאת התשלום
+# Возникла ошибка оплаты
+msgid "Payment error"
+msgstr "אירעה שגיאת תשלום"
+
+# Возникла ошибка прав - доктор должен одобрять свои платежи
+# אירעה שגיאה - על ההומאופת לאשר את התשלומים
+msgid "Error: doctor must approve own payments"
+msgstr "אירעה שגיאה - על הומאופת לאשר את התשלומים"
+
+# תשלום של המשתמש
+# Оплата пользователя
+msgid "User payment "
+msgstr ""
+"תשלום של המשתמש \n"
+
+msgid "Error, duplicate 1: User consultation "
+msgstr ""
