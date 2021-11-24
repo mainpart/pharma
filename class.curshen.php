@@ -5,7 +5,7 @@
  * User: dmitry
  * Date: 24.10.2018
  * Time: 22:51
- * Плагин для организации консультаций
+ * Плагин для организации консультаций на сайте curshen.ru
  */
 class Curshen {
 	private static $initiated = false;
@@ -50,12 +50,6 @@ class Curshen {
 			}
 			if ( $post_id = url_to_postid( wp_get_referer() ) ) {
 				if ( $post = WP_Post::get_instance( $post_id ) ) {
-
-//                    if ($post->post_type == Pharma::CONSULTATION_POST_TYPE){
-//	                    // если это консультация то берем доктора с нее
-//                        $tag['values'] [] = $post->doctor_id;
-//	                    return $tag;
-//                    }
 					$user = get_user_by( 'ID', $post->post_author );
 					if ( $user && $user->has_cap( 'edit_posts' ) ) {
 						$tag['values'] [] = $user->ID;
@@ -180,7 +174,6 @@ class Curshen {
 		if ( ! $doctor  || ! $doctor->has_cap('edit_posts')) {
 			return;
 		}
-
 		$mailprop = $contact_form->get_properties();
 		$mailprop['mail']['recipient'] = $doctor->user_email ;
 		$contact_form->set_properties($mailprop);
@@ -192,8 +185,8 @@ class Curshen {
 		$consultation_page_id = $submission->get_posted_data()['consultation'];
 		// последние версии возвращают массив почему-то
 		if ($consultation_page_id && is_array($consultation_page_id)) $consultation_page_id = array_pop($consultation_page_id);
-		if ( $consultation_page_id ) {
 
+		if ( $consultation_page_id ) {
 			// защита от взлома через указание чужой консультации
 			$query = new WP_Query( [
 				'meta_query'  => [
@@ -218,8 +211,8 @@ class Curshen {
 			}
 
 		}
-		do_action( 'pharma_user_freeconsult_addmember', wp_get_current_user()->ID, $doctor->ID );
 
+		do_action( 'pharma_user_freeconsult_addmember', wp_get_current_user()->ID, $doctor->ID );
 		if ( $consultation_page_id ) {
 			wp_insert_comment( [ 'user_id' => get_current_user_id(), 'comment_post_ID' => $consultation_page_id, 'comment_content' => $post ] );
 		}

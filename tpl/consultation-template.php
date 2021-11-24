@@ -27,7 +27,7 @@ get_header(); ?>
 						$timestamp = get_user_meta($client->ID,'paidtill_'.$post->doctor_id,true);
 						if ($timestamp) {
 							$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
-							echo "<h3>Доступ в личный кабинет открыт по " . $date_time_obj->format( "Y-m-d" ) . "</h3>";
+							echo "<h4>Абонемент открыт до " . $date_time_obj->format( "Y-m-d" ) . "</h4>";
 							if (shortcode_exists('tminus')) {
 								echo do_shortcode("[tminus  t='{$date_time_obj->format( "Y/m/d" )}'/]");
 							}
@@ -42,11 +42,11 @@ get_header(); ?>
 
 								],
 							],
-							'cat'=>ADVERT_CATEGORY
+							'cat'=>Pharma::ADVERT_CATEGORY
 						]);
 						wp_reset_postdata();
 
-						echo "<h3><a href='".get_permalink($query->post)."'>{$doctor->display_name}</a> - {$client->display_name}</h3>";
+						echo "<h4><a href='".get_permalink($query->post)."'>{$doctor->display_name}</a> - {$client->display_name}</h4>";
 					}
 					get_template_part( 'template-parts/content','consultation');
 					?>

@@ -14,6 +14,7 @@ class Pharma {
 	private static $initiated = false;
 
 	public static function init() {
+		include( __DIR__ . "/config.inc.php" );
 		if ( ! self::$initiated ) {
 			self::init_hooks();
 		}
@@ -30,7 +31,6 @@ class Pharma {
 //			true );
 //		wp_localize_script( 'pharma.user.js', 'myAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 
-		add_filter( 'wpcf7_spam', '__return_false', 99999999 );
 
 		add_action( 'template_redirect', array( self::class, 'action_advert_post' ) );
 		add_action( 'template_redirect', array( self::class, 'action_consult_post' ) );
@@ -108,7 +108,7 @@ class Pharma {
 			wp_unschedule_event( $time_schedule, 'pharma_paidtill_notify', $params );
 		}
 		// за три дня до окончания доступа оповещаем пользователя
-		wp_schedule_single_event( $time - ( 84600 * 1 ), 'pharma_paidtill_notify', $params );
+		wp_schedule_single_event( $time - ( 84600 * 3 ), 'pharma_paidtill_notify', $params );
 		// в час окончания доступа
 		wp_schedule_single_event( $time, 'pharma_paidtill_notify', $params );
 	}
@@ -128,12 +128,12 @@ class Pharma {
 			ob_start();
 			include plugin_dir_path( __FILE__ ) . "tpl/email-paidtill-notification.php";
 			$message = ob_get_clean();
-			wp_mail( $client->user_email, __('End of subscription ', 'pharma') . $doctor->display_name, $message );
+			wp_mail( $client->user_email, 'Доступ на сайт Куршен Консультаций ' , $message );
 		} elseif ( $timestamp - 1 < time() ) {
 			ob_start();
 			include plugin_dir_path( __FILE__ ) . "tpl/email-paidtillend-notification.php";
 			$message = ob_get_clean();
-			wp_mail( $client->user_email, __('End of subscription ', 'pharma') . $doctor->display_name, $message );
+			wp_mail( $client->user_email, 'Ограничение доступа на сайт Куршен Консультации ' , $message );
 
 		}
 
@@ -253,13 +253,13 @@ class Pharma {
 //				map_meta_cap( $cap, 1 );
 //			}
 //		}
-		//xdebug_break();
-		$a = __( 'Invoice' );
+
+
 		register_post_type( self::ORDER_POST_TYPE,
 			array(
 				'labels'               => array(
-					'name'          => __( 'Invoices', 'pharma' ),
-					'singular_name' => __( 'Invoice', 'pharma' )
+					'name'          => __( 'Платежи' ),
+					'singular_name' => __( 'Платёж' )
 				),
 				'public'               => true,
 				'has_archive'          => true,
@@ -279,8 +279,8 @@ class Pharma {
 		register_post_type( self::CONSULTATION_POST_TYPE,
 			array(
 				'labels'             => array(
-					'name'          => __( 'Consultations' , 'pharma'),
-					'singular_name' => __( 'Consultation' , 'pharma')
+					'name'          => __( 'Консультации' ),
+					'singular_name' => __( 'Консультация' )
 				),
 				'public'             => true,
 				'has_archive'        => true,
@@ -304,8 +304,8 @@ class Pharma {
 	 * Ограничения на оплату по столбцам
 	 */
 	public static function order_columns( $columns ) {
-		$columns['paid_status'] = __('Status', 'pharma');
-		$columns['timestamp']   = __('Payment status', 'pharma');
+		$columns['paid_status'] = 'Статус';
+		$columns['timestamp']   = 'Статус оплаты';
 
 		return $columns;
 	}
@@ -313,7 +313,7 @@ class Pharma {
 	public static function order_columns_content( $column_id, $post_id ) {
 		switch ( $column_id ) {
 			case 'paid_status':
-				echo ( $value = get_post_meta( $post_id, 'paid_status', true ) ) ? 'Paid' : 'Not paid';
+				echo ( $value = get_post_meta( $post_id, 'paid_status', true ) ) ? 'Оплачено' : 'Не оплачено';
 				break;
 			case 'timestamp' :
 				$paid_status = get_post_meta( $post_id, "paid_status", true );
@@ -328,8 +328,8 @@ class Pharma {
 				}
 				if ( ! $paid_status ) {
 					echo "<div>
-                    <input type=button value='" . __( $timestamp ? "Extend  subscription" : "Open subscription" , 'pharma') . "' data-client-id={$client_id} data-action='prolong' class=pay_button />
-                    <input type=button value='".__('Add consultation', 'pharma')."' data-client-id={$client_id} data-action='add' class=pay_button />
+                    <input type=button value='" . ( $timestamp ? "Продлить" : "Открыть" ) . " подписку' data-client-id={$client_id} data-action='prolong' class=pay_button />
+                    <input type=button value='Добавить консультацию' data-client-id={$client_id} data-action='add' class=pay_button />
                     </div>";
 				}
 				echo "</div>";
@@ -338,12 +338,12 @@ class Pharma {
 	}
 
 	public static function consultation_columns( $columns ) {
-		$columns['doctor_id'] = __('Homeopath', 'pharma');
-		$columns['client_id'] = __('Client', 'pharma');
-		$columns['paidtill']  = __('Paid until', 'pharma');
+		$columns['doctor_id'] = 'Врач';
+		$columns['client_id'] = 'Клиент';
+		$columns['paidtill']  = 'Оплачено по';
 
-		$columns['is_active'] = __('Status', 'pharma');
-//		$columns['paidtill'] = __('Paid until');
+		$columns['is_active'] = 'Статус';
+//		$columns['paidtill'] = 'Оплачено по';
 //
 		unset( $columns['date'] );
 
@@ -383,8 +383,8 @@ class Pharma {
 		$value = get_post_meta( $post->ID, 'paid_status', true ); //my_key is a meta_key. Change it to whatever you want
 		?>
 		<ul class="categorychecklist form-no-clear">
-			<li><label><input type="radio" name="pharma-paid-radio" value="0" <?php checked( $value, '0' ); ?> >Not paid<br></label></li>
-			<li><label><input type="radio" name="pharma-paid-radio" value="1" <?php checked( $value, '1' ); ?> >Paid<br></label>
+			<li><label><input type="radio" name="pharma-paid-radio" value="0" <?php checked( $value, '0' ); ?> >Не оплачено<br></label></li>
+			<li><label><input type="radio" name="pharma-paid-radio" value="1" <?php checked( $value, '1' ); ?> >Оплачено<br></label>
 			</li>
 		</ul>
 		<?php
@@ -399,7 +399,7 @@ class Pharma {
 		if ( ! isset( $_GET['YOUR_QUERY_VAR'] ) ) {
 			return;
 		}
-		echo '<div class="error"><p>Payment Status Changed</p></div>';
+		echo '<div class="error"><p>Изменился статус оплаты</p></div>';
 	}
 
 	public function add_notice_query_var( $location ) {
@@ -524,7 +524,7 @@ class Pharma {
 				return $comment;
 			}
 			if ( ! $timestamp || $timestamp < time() ) {
-				$comment->comment_content = __('Access to comments closed. You need to renew subscription!', 'pharma');
+				$comment->comment_content = 'Доступ в личный кабинет ограничен. Пользователю необходимо обновить абонементное обслуживание на сайте. ';
 			}
 			//}
 
@@ -644,13 +644,12 @@ class Pharma {
 		$doctor = get_user_by( 'ID', $doctor_id );
 		$id     = self::get_consultation_page( $doctor_id, $client_id );
 		if ( ! $check_exist || ! $id ) {
-			
 			$id     = wp_insert_post( [
 				'post_author' => $doctor_id,
-				'post_title'  => $client->display_name . __("- личный кабинет", 'pharma'),
+				'post_title'  => $client->display_name . " - личный кабинет",
 				'post_type'   => self::CONSULTATION_POST_TYPE,
 				'post_status' => 'publish',
-				'cat'         => CONSULT_CATEGORY
+				'cat'         => self::CONSULT_CATEGORY
 			] );
 			$insert = $wpdb->prepare( "(%s, %d, %d, 0, 'asap', %s, %s, %s, 'subscribed', %d)", 'k' . strtolower( substr( md5( time() . $doctor_id ), 0, 18 ) ), $client_id, $id,
 				$client->first_name, $client->last_name, $client->user_email, time() );
@@ -689,7 +688,7 @@ class Pharma {
 
 		if ( $post instanceof WP_Post
 		     && wp_get_current_user()->ID
-		     && in_array( ADVERT_CATEGORY, wp_get_post_categories( $post->ID ) )
+		     && in_array( self::ADVERT_CATEGORY, wp_get_post_categories( $post->ID ) )
 		) {
 			$doctor_id = $post->post_author;
 			ob_start();
@@ -697,7 +696,7 @@ class Pharma {
 
 			return ob_get_clean();
 		} else {
-			return '<div class=register> <a href="'.wp_login_url().'"> </a> '.__('This is not an apropriate place of form', 'pharma').'</div>';
+			return 'Данная форма может располагаться только в записях из категории ' . get_the_category_by_ID( self::ADVERT_CATEGORY );
 		}
 	}
 
@@ -713,14 +712,14 @@ class Pharma {
 		$user      = wp_get_current_user();
 		$doctor    = get_user_by( 'ID', $doctor_id );
 		if ( ! $doctor ) {
-			wp_die( __('User not found', 'pharma') );
+			wp_die( 'Не найден пользователь с заданным идентификатором' );
 		}
-		$message  = __('User name: ', 'pharma') . sanitize_text_field( $_POST['name'] ) . "\r\n" .
-		            __('Payment details (date, amount, payment system)', 'pharma') . sanitize_textarea_field( $_POST['message'] ) . "\r\n";
+		$message  = "Имя пользователя: " . sanitize_text_field( $_POST['name'] ) . "\r\n" .
+		            "Детали платежа (дата, сумма, способ): " . sanitize_textarea_field( $_POST['message'] ) . "\r\n";
 		$order_id = wp_insert_post( [
 			'post_author'  => $doctor_id,
 			'post_content' => $message,
-			'post_title'   => __("User payment ", 'pharma') . $user->display_name,
+			'post_title'   => "Оплата пользователя " . $user->display_name,
 			'post_type'    => self::ORDER_POST_TYPE,
 			'post_status'  => 'publish',
 
@@ -730,7 +729,7 @@ class Pharma {
 		ob_start();
 		include plugin_dir_path( __FILE__ ) . "tpl/email-paid-notification.php";
 		$message = ob_get_clean();
-		wp_mail( $doctor->user_email, __('Notification of subscribing ', 'pharma') . $user->display_name, $message );
+		wp_mail( $doctor->user_email, 'Уведомление о подписке пользователя' . $user->display_name, $message );
 		wp_redirect( '/?page_id=' . PAYMENT_PAGE_ID, 301 );
 	}
 
@@ -743,7 +742,7 @@ class Pharma {
 			update_post_meta( $_POST['post_id'], 'is_active', $_POST['value'] === 'true' ? 1 : 0 );
 			wp_die( '1' );
 		}
-		wp_die( __('Access denied' , 'pharma'));
+		wp_die( 'Недостаточно прав для совершения операции' );
 	}
 
 	public static function consult_change_date_admin_ajax() {
@@ -755,7 +754,7 @@ class Pharma {
 			$date_time_obj = DateTime::createFromFormat( "U", $_POST['time'] );
 			wp_die( $date_time_obj->format( "Y-m-d" ) );
 		}
-		wp_die( __('Access denied' , 'pharma'));
+		wp_die( 'Недостаточно прав для совершения операции' );
 	}
 
 
@@ -775,9 +774,9 @@ class Pharma {
 				$timestamp = get_user_meta( $_POST['client_id'], "paidtill_" . $user->ID, true );
 				if ( $timestamp ) {
 					$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
-					echo __('Paid until ', 'pharma') . $date_time_obj->format( "Y-m-d" );
+					echo 'Оплачено по ' . $date_time_obj->format( "Y-m-d" );
 				} else {
-					echo __('Payment error', 'pharma');
+					echo "Возникла ошибка оплаты";
 				}
 			} elseif ( $_POST['type'] == 'add' ) {
 				// добавляем еще одну консультацию
@@ -785,13 +784,13 @@ class Pharma {
 				$timestamp = get_user_meta( $_POST['client_id'], "paidtill_" . $user->ID, true );
 				if ( $timestamp ) {
 					$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
-					echo __('Paid until ', 'pharma')  . $date_time_obj->format( "Y-m-d" );
+					echo 'Оплачено по ' . $date_time_obj->format( "Y-m-d" );
 				} else {
-					echo __('Payment error', 'pharma');
+					echo "Возникла ошибка оплаты";
 				}
 			}
 		} else {
-			echo __('Error: doctor must approve own payments', 'pharma');
+			echo "Возникла ошибка прав - доктор должен одобрять свои платежи";
 		}
 		wp_die();
 	}
@@ -804,7 +803,7 @@ class Pharma {
 		global $wp_query;
 
 		if ( $wp_query->is_single && ( $post = $wp_query->get_queried_object() ) instanceof WP_Post &&
-		     in_array( ADVERT_CATEGORY, wp_get_post_categories( $post->ID ) )
+		     in_array( self::ADVERT_CATEGORY, wp_get_post_categories( $post->ID ) )
 		) {
 			$user = wp_get_current_user();
 			wp_get_post_categories( $post->ID );
@@ -846,7 +845,7 @@ class Pharma {
 			$is_active = get_post_meta( $post->ID, 'is_active', true );
 			$query     = new WP_Query( [
 				'author' => $doctor_id,
-				'cat'    => ADVERT_CATEGORY,
+				'cat'    => self::ADVERT_CATEGORY,
 			] );
 			if ( $query->post_count ) {
 				$doctor_page = $query->post;

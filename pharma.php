@@ -22,7 +22,6 @@ register_deactivation_hook( __FILE__, array( 'Pharma', 'plugin_deactivation' ) )
 
 require_once( PHARMA__PLUGIN_DIR . 'class.pharma.php' );
 require_once( PHARMA__PLUGIN_DIR . 'class.curshen.php' );
-require_once( PHARMA__PLUGIN_DIR . "/config.inc.php" );
 require_once( PHARMA__PLUGIN_DIR . "/sidebar.php" );
 
 
