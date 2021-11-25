@@ -6,7 +6,7 @@
    Text Domain: pharma
    GitHub Plugin URI: https://github.com/mainpart/pharma
    Domain Path: /language
-   Version: 1.0.1
+   Version: 1.0.2
    Description: Плагин для организации консультаций
 */
 
