@@ -14,8 +14,8 @@ class Pharma {
 	public static function init() {
 		if ( ! self::$initiated ) {
 			$options = get_option(PHARMA_OPTIONS);
-			self::$advert_category = $options['advert-category'];
-			self::$consult_category = $options['consult-category'];
+			self::$advert_category = (int)$options['advert-category'];
+			self::$consult_category = (int)$options['consult-category'];
 			self::init_hooks();
 		}
 	}
@@ -214,7 +214,7 @@ class Pharma {
 				} else {
 					// у пользователя нет консультаций. куда?
 					$options = get_option( PHARMA_OPTIONS );
-					return $options['after-login-page'];
+					return get_permalink($options['after-login-page']);
 				}
 		}
 
@@ -723,7 +723,11 @@ class Pharma {
 
 			return ob_get_clean();
 		} else {
-			return 'Данная форма может располагаться только в записях из категории ' . get_the_category_by_ID( self::$advert_category );
+			$category = get_the_category_by_ID( self::$advert_category );
+			if (is_wp_error($category)) {
+				return 'Ошибка поиска категории';
+			}
+			return 'Данная форма может располагаться только в записях из категории ' . $category;
 		}
 	}
 
