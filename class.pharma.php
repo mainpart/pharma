@@ -1,20 +1,21 @@
 <?php
 
 class Pharma {
-	// категория для рекламных постов
-	const ADVERT_CATEGORY = 2;
-	const CONSULT_CATEGORY = 3;
-
+	public static int $advert_category;
+	public static int $consult_category;
 
 	const ORDER_POST_TYPE = 'orderz';
 	const CONSULTATION_POST_TYPE = 'consultation';
 
 	const email_regexp = '(?:[a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
 
-	private static $initiated = false;
+	private static bool $initiated = false;
 
 	public static function init() {
 		if ( ! self::$initiated ) {
+			$options = get_option(PHARMA_OPTIONS);
+			self::$advert_category = $options['advert-category'];
+			self::$consult_category = $options['consult-category'];
 			self::init_hooks();
 		}
 	}
@@ -593,7 +594,7 @@ class Pharma {
 
 								],
 							],
-							'cat'=>Pharma::ADVERT_CATEGORY
+							'cat'=>self::$advert_category
 						]);
 						wp_reset_postdata();
 
@@ -621,7 +622,7 @@ class Pharma {
 			],
 			'post_type'   => self::CONSULTATION_POST_TYPE,
 			'post_status' => [ 'publish' ],
-			//'cat'=>self::CONSULT_CATEGORY,
+			//'cat'=>self::$consult_category,
 
 		] );
 		if ( $query->post_count ) {
@@ -675,7 +676,7 @@ class Pharma {
 				'post_type'   => self::CONSULTATION_POST_TYPE,
 				'post_content'=>'[access capability="switch_themes"] *** [/access]',
 				'post_status' => 'publish',
-				'cat'         => self::CONSULT_CATEGORY
+				'cat'         => self::$consult_category
 			] );
 			$insert = $wpdb->prepare( "(%s, %d, %d, 0, 'asap', %s, %s, %s, 'subscribed', %d)", 'k' . strtolower( substr( md5( time() . $doctor_id ), 0, 18 ) ), $client_id, $id,
 				$client->first_name, $client->last_name, $client->user_email, time() );
@@ -714,7 +715,7 @@ class Pharma {
 
 		if ( $post instanceof WP_Post
 		     && wp_get_current_user()->ID
-		     && in_array( self::ADVERT_CATEGORY, wp_get_post_categories( $post->ID ) )
+		     && in_array( self::$advert_category, wp_get_post_categories( $post->ID ) )
 		) {
 			$doctor_id = $post->post_author;
 			ob_start();
@@ -722,7 +723,7 @@ class Pharma {
 
 			return ob_get_clean();
 		} else {
-			return 'Данная форма может располагаться только в записях из категории ' . get_the_category_by_ID( self::ADVERT_CATEGORY );
+			return 'Данная форма может располагаться только в записях из категории ' . get_the_category_by_ID( self::$advert_category );
 		}
 	}
 
@@ -830,7 +831,7 @@ class Pharma {
 		global $wp_query;
 
 		if ( $wp_query->is_single && ( $post = $wp_query->get_queried_object() ) instanceof WP_Post &&
-		     in_array( self::ADVERT_CATEGORY, wp_get_post_categories( $post->ID ) )
+		     in_array( self::$advert_category, wp_get_post_categories( $post->ID ) )
 		) {
 			$user = wp_get_current_user();
 			wp_get_post_categories( $post->ID );
@@ -872,7 +873,7 @@ class Pharma {
 			$is_active = get_post_meta( $post->ID, 'is_active', true );
 			$query     = new WP_Query( [
 				'author' => $doctor_id,
-				'cat'    => self::ADVERT_CATEGORY,
+				'cat'    => self::$advert_category,
 			] );
 			if ( $query->post_count ) {
 				$doctor_page = $query->post;

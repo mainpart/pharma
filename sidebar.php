@@ -43,7 +43,7 @@ class PharmaWidget extends WP_Widget {
 		}
 		$query = new WP_Query([
 			'author' => $doctor_id,
-			'cat'    => ADVERT_CATEGORY,
+			'cat'    => Pharma::$advert_category,
 		]);
 		if ($query->have_posts()){
 			$doctorurl = get_permalink($query->post->ID);
