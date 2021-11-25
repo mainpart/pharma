@@ -1,0 +1,12 @@
+{
+    "name": "dykrasni/pharma",
+    "authors": [
+        {
+            "name": "Дмитрий Красников",
+            "email": "dykrasni@mts.ru"
+        }
+    ],
+    "require": {
+        "afragen/wp-dependency-installer": "^4.2"
+    }
+}

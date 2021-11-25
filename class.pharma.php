@@ -14,7 +14,6 @@ class Pharma {
 	private static $initiated = false;
 
 	public static function init() {
-		include( __DIR__ . "/config.inc.php" );
 		if ( ! self::$initiated ) {
 			self::init_hooks();
 		}
@@ -59,7 +58,7 @@ class Pharma {
 
 		add_action( 'pre_get_posts', [ self::class, 'wpse63675_pre_posts' ] );
 
-		add_filter( 'single_template', [ self::class, 'consultation_template' ] );
+		add_filter( 'the_content', [ self::class, 'consultation_template' ] );
 
 		add_action( 'wp_insert_comment', [ self::class, 'comment_insert' ], 10, 2 );
 		add_action( 'the_comments', [ self::class, 'the_comments' ], 10, 1 );
@@ -86,7 +85,7 @@ class Pharma {
 
 	}
 
-	function wpse63675_pre_posts( $q ) {
+	static function wpse63675_pre_posts( $q ) {
 		if ( ! is_post_type_archive( self::CONSULTATION_POST_TYPE ) ) {
 			return;
 		}
@@ -209,11 +208,12 @@ class Pharma {
 						//wp_die(var_export($query->post_count,true));
 						return get_post_permalink( $redirect );
 					} else {
-						return '/?post_type=' . self::CONSULTATION_POST_TYPE;
+						return get_post_type_archive_link( self::CONSULTATION_POST_TYPE);
 					}
 				} else {
 					// у пользователя нет консультаций. куда?
-					return REDIRECT_AFTER_LOGIN;
+					$options = get_option( PHARMA_OPTIONS );
+					return $options['after-login-page'];
 				}
 		}
 
@@ -224,7 +224,7 @@ class Pharma {
 	/**
 	 * Прячет меню в админке для всех кроме докторов
 	 */
-	function hide_menus() {
+	static function hide_menus() {
 		global $menu;
 
 		//$user = wp_get_current_user();
@@ -242,7 +242,7 @@ class Pharma {
 		}
 	}
 
-	function create_post_type() {
+	static function create_post_type() {
 
 		// убираем возможность редактирования
 //		if (!current_user_can('activate_plugins')) {
@@ -572,9 +572,34 @@ class Pharma {
 	public function consultation_template( $template ) {
 		global $post;
 		if ( $post->post_type == self::CONSULTATION_POST_TYPE ) {
-			if ( file_exists( $file = plugin_dir_path( __FILE__ ) . "tpl/consultation-template.php" ) ) {
-				return $file;
-			}
+
+						$client = get_user_by('ID', $post->client_id);
+						$doctor = get_user_by('ID', $post->doctor_id);
+						$timestamp = get_user_meta($client->ID,'paidtill_'.$post->doctor_id,true);
+						if ($timestamp) {
+							$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
+							$template.="<h4>Абонемент открыт до " . $date_time_obj->format( "Y-m-d" ) . "</h4>";
+							if (shortcode_exists('tminus')) {
+								$template.=do_shortcode("[tminus  t='{$date_time_obj->format( "Y/m/d" )}'/]");
+							}
+						}
+
+						$query = new WP_Query([
+							'meta_query'=>[
+								'relation'=>'AND',
+								[
+									'key'=>'doctor_id',
+									'value'=>$doctor->ID,
+
+								],
+							],
+							'cat'=>Pharma::ADVERT_CATEGORY
+						]);
+						wp_reset_postdata();
+
+						$template.= "<h4><a href='".get_permalink($query->post)."'>{$doctor->display_name}</a> - {$client->display_name}</h4>";
+
+
 		}
 
 		return $template;
@@ -648,6 +673,7 @@ class Pharma {
 				'post_author' => $doctor_id,
 				'post_title'  => $client->display_name . " - личный кабинет",
 				'post_type'   => self::CONSULTATION_POST_TYPE,
+				'post_content'=>'[access capability="switch_themes"] *** [/access]',
 				'post_status' => 'publish',
 				'cat'         => self::CONSULT_CATEGORY
 			] );
@@ -730,7 +756,8 @@ class Pharma {
 		include plugin_dir_path( __FILE__ ) . "tpl/email-paid-notification.php";
 		$message = ob_get_clean();
 		wp_mail( $doctor->user_email, 'Уведомление о подписке пользователя' . $user->display_name, $message );
-		wp_redirect( '/?page_id=' . PAYMENT_PAGE_ID, 301 );
+		$options = get_option( PHARMA_OPTIONS );
+		wp_redirect( get_permalink($options['payment-page']), 301 );
 	}
 
 

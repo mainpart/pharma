@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: dmitry
- * Date: 24.10.2018
- * Time: 22:51
- * Плагин для организации консультаций на сайте curshen.ru
- */
 class Curshen {
 	private static $initiated = false;
 
@@ -21,7 +14,7 @@ class Curshen {
 	 */
 	public static function init_hooks() {
 		self::$initiated = true;
-		add_action( 'wpcf7_before_send_mail', [ self::class, 'before_send_email' ], 10 ,3 );
+		add_action( 'wpcf7_before_send_mail', [ self::class, 'before_send_email' ] );
 		//add_filter( 'modify_form_before_insert_data', [ self::class, 'save_files' ] );
 
 		add_action( 'pharma_user_freeconsult_addmember', [ self::class, 'client_paid_set_meta' ], 10, 2 );
@@ -37,7 +30,7 @@ class Curshen {
 
 	}
 
-	function textdomain() {
+	static function textdomain() {
 		load_plugin_textdomain( 'pharma', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
 
@@ -60,7 +53,7 @@ class Curshen {
 			if ( defined( 'CONSULTATION_REDIRECT' ) ) {
 				wp_redirect( get_permalink( CONSULTATION_REDIRECT ) );
 			} else {
-				wp_die( __('Referer of the page should be from a doctor or the client page', 'pharma') );
+				wp_die( 'Переход на страницу консультаций должен быть от доктора' );
 			}
 		}
 
@@ -89,7 +82,7 @@ class Curshen {
 			} else {
 				$tag['raw_values'][] = 0;
 				$tag['values'][]     = 0;
-				$tag['labels'][]     = __("New consultation", 'pharma');
+				$tag['labels'][]     = "Новая консультация";
 			}
 		}
 
@@ -161,9 +154,9 @@ class Curshen {
 		if ( ! ( isset( $submission->get_posted_data()['is_consult'] ) && is_user_logged_in() ) ) {
 			return;
 		}
-
-		if ( defined( 'CONSTANT_DOCTOR_LOGIN' ) ) {
-			$doctor = get_user_by( 'login', CONSTANT_DOCTOR_LOGIN );
+        $options = get_option(PHARMA_OPTIONS);
+		if ( $options['constant-doctor'] ) {
+			$doctor = get_user_by( 'id', $options['constant-doctor-id'] );
 		} elseif ( $doctor_id =  $submission->get_posted_data()['is_consult']  ) {
 			$doctor = get_user_by( 'ID', $doctor_id );
 		} else {
