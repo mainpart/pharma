@@ -36,11 +36,13 @@ class Curshen {
 
 	static function fill_tags( $tag ) {
 		if (is_admin()) return $tag;
+		$options = get_option(PHARMA_OPTIONS);
 		if ( $tag['name'] == 'is_consult' && $tag['type'] == 'hidden' ) {
 			// если задан доктор по умолчанию то нам не надо автоопределять ничего
-			if ( defined( 'CONSTANT_DOCTOR_LOGIN' ) ) {
+			if ( $options['constant-doctor'] ) {
 				return $tag;
 			}
+			// иначе мы должны определить с какого опросника мы пришли чтобы разместить этого доктора в скрытых тэгах
 			if ( $post_id = url_to_postid( wp_get_referer() ) ) {
 				if ( $post = WP_Post::get_instance( $post_id ) ) {
 					$user = get_user_by( 'ID', $post->post_author );
