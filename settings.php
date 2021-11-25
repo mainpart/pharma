@@ -55,7 +55,8 @@ if ( class_exists( 'CSF' ) ) {
 				'id'    => 'constant-doctor',
 				'type'  => 'switcher',
 				'title' => 'Консультирует один доктор',
-				'default' => false // or false
+				'default' => false, // or false
+				'sanitize' => 'csf_make_bool',
 			),
 			array(
 				'id'         => 'constant-doctor-id',
@@ -93,5 +94,8 @@ if ( class_exists( 'CSF' ) ) {
 		)
 	) );
 
+	function csf_make_bool($value){
+		return (bool)$value;
+	}
 
 }

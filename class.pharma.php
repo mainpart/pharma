@@ -569,7 +569,7 @@ class Pharma {
 	}
 
 
-	public function consultation_template( $template ) {
+	public static function consultation_template( $template ) {
 		global $post;
 		if ( $post->post_type == self::CONSULTATION_POST_TYPE ) {
 
