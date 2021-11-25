@@ -5,6 +5,7 @@
    License: GPLv2 or later
    Text Domain: pharma
    GitHub Plugin URI: https://github.com/mainpart/pharma
+   Primary Branch: main
    Domain Path: /language
    Version: 1.0.2
    Description: Плагин для организации консультаций
