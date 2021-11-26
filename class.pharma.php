@@ -124,17 +124,18 @@ class Pharma {
 		$doctor        = get_user_by( 'ID', $doctor_id );
 		$timestamp     = get_user_meta( $client_id, 'paidtill_' . $doctor_id, true );
 		$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
+		$options = get_option(PHARMA_OPTIONS);
+
 		if ( $timestamp > ( ( time() - 84600 * 3 ) - 1 ) && ( $timestamp > time() ) ) {
 			ob_start();
-			include plugin_dir_path( __FILE__ ) . "tpl/email-paidtill-notification.php";
+			eval('?>'.$options['email-paidtill-notification'].'<?php');
 			$message = ob_get_clean();
 			wp_mail( $client->user_email, 'Доступ на сайт Куршен Консультаций ' , $message );
 		} elseif ( $timestamp - 1 < time() ) {
 			ob_start();
-			include plugin_dir_path( __FILE__ ) . "tpl/email-paidtillend-notification.php";
+			eval('?>'.$options['email-paidtillend-notification'].'<?php');
 			$message = ob_get_clean();
 			wp_mail( $client->user_email, 'Ограничение доступа на сайт Куршен Консультации ' , $message );
-
 		}
 
 	}
@@ -656,7 +657,8 @@ class Pharma {
 
 		ob_start();
 		$consultation_post_id = self::get_consultation_page( $doctor_id, $client_id );
-		include plugin_dir_path( __FILE__ ) . "tpl/email-accept-notification.php";
+		$options = get_option(PHARMA_OPTIONS);
+		eval('?>'.$options['email-accept-notification'].'<?php');
 		$message = ob_get_clean();
 		wp_mail( $user->user_email, 'Уведомление об открытии доступа ' . $doctor->display_name, $message );
 	}
@@ -719,8 +721,8 @@ class Pharma {
 		) {
 			$doctor_id = $post->post_author;
 			ob_start();
-			include plugin_dir_path( __FILE__ ) . "tpl/order-payment-form.php";
-
+			$options = get_option(PHARMA_OPTIONS);
+			eval('?>'.$options['order-payment-form'].'<?php');
 			return ob_get_clean();
 		} else {
 			$category = get_the_category_by_ID( self::$advert_category );
@@ -758,10 +760,10 @@ class Pharma {
 		update_post_meta( $order_id, 'doctor_id', $doctor_id );
 		update_post_meta( $order_id, 'client_id', $user->ID );
 		ob_start();
-		include plugin_dir_path( __FILE__ ) . "tpl/email-paid-notification.php";
+		$options = get_option(PHARMA_OPTIONS);
+		eval('?>'.$options['email-paid-notification'].'<?php');
 		$message = ob_get_clean();
 		wp_mail( $doctor->user_email, 'Уведомление о подписке пользователя' . $user->display_name, $message );
-		$options = get_option( PHARMA_OPTIONS );
 		wp_redirect( get_permalink($options['payment-page']), 301 );
 	}
 
