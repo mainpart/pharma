@@ -31,7 +31,8 @@ class Pharma {
 //			true );
 //		wp_localize_script( 'pharma.user.js', 'myAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 
-
+		// рекапча должна быть включена в настройках. приоритет рекапчи 9 - наш фильтр вызывается раньше
+		add_filter('wpcf7_spam', '__return_false', 8);
 		add_action( 'template_redirect', array( self::class, 'action_advert_post' ) );
 		add_action( 'template_redirect', array( self::class, 'action_consult_post' ) );
 
