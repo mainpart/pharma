@@ -101,7 +101,7 @@ class Pharma {
 	 * @var $doctor_id int
 	 * @var $time int
 	 */
-	function client_paidtill_change( $client_id, $doctor_id, $time ) {
+	static function  client_paidtill_change( $client_id, $doctor_id, $time ) {
 		// нужно убрать старый крон
 		$params = [ $client_id, $doctor_id ];
 
@@ -120,7 +120,7 @@ class Pharma {
 	 * @param $client_id int
 	 * @param $doctor_id int
 	 */
-	function action_paidtill_notify( $client_id, $doctor_id ) {
+	static function action_paidtill_notify( $client_id, $doctor_id ) {
 		$client        = get_user_by( 'ID', $client_id );
 		$doctor        = get_user_by( 'ID', $doctor_id );
 		$timestamp     = get_user_meta( $client_id, 'paidtill_' . $doctor_id, true );
@@ -144,7 +144,7 @@ class Pharma {
 	/**
 	 * Делаем так чтобы имя пользователя в комментарии соответствовало не email'у но display_name
 	 */
-	function preprocess_comment( $comment_data ) {
+	static function preprocess_comment( $comment_data ) {
 
 		if ( isset( $_REQUEST['comment_mail_rve_key'] ) && \WebSharks\CommentMail\Pro\UtilsRve::key() == trim( stripslashes( (string) $_REQUEST['comment_mail_rve_key'] ) ) ) {
 			if ( preg_match(
@@ -167,7 +167,7 @@ class Pharma {
 	 *
 	 * @param WP_User $user
 	 */
-	function redirect_wrapper( $redirect_to, $requested_redirect_to, $user ) {
+	static function redirect_wrapper( $redirect_to, $requested_redirect_to, $user ) {
 		if ( ! isset( $user->user_login ) ) {
 			return $redirect_to;
 		}
@@ -513,7 +513,7 @@ class Pharma {
 	 * @var $comment WP_Comment
 	 * @return WP_Comment
 	 */
-	public function get_comment( $comment ) {
+	public static function get_comment( $comment ) {
 		$post = WP_Post::get_instance( $comment->comment_post_ID );
 		if ( $post->post_type == self::CONSULTATION_POST_TYPE ) {
 			// смотрим на то не просрочен ли доступ у автора комментария
@@ -539,7 +539,7 @@ class Pharma {
 	/**
 	 * Фильтрация комментариев чтобы никто не видел чужие
 	 */
-	public function the_comments( $comments ) {
+	public static  function the_comments( $comments ) {
 
 		foreach ( $comments as $idx => $comment ) {
 
@@ -563,7 +563,7 @@ class Pharma {
 	 * @var $id int
 	 * @var $comment WP_Comment
 	 */
-	public function comment_insert( $id, $comment ) {
+	public static function comment_insert( $id, $comment ) {
 		//$post = get_post($comment->comment_post_ID);
 		//wp_die(var_dump($post,$comment));
 		//$comment->comment_approved = 1;
@@ -608,7 +608,7 @@ class Pharma {
 		return $template;
 	}
 
-	private function get_consultation_page( $doctor_id, $client_id ) {
+	private static function get_consultation_page( $doctor_id, $client_id ) {
 		$query = new WP_Query( [
 			'meta_query'  => [
 				'relation' => 'AND',
@@ -634,7 +634,7 @@ class Pharma {
 		}
 	}
 
-	public function order_paid_set_meta( $order_id ) {
+	public static function order_paid_set_meta( $order_id ) {
 		update_post_meta( $order_id, 'paid_status', 1 );
 	}
 

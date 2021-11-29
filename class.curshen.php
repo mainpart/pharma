@@ -98,7 +98,7 @@ class Curshen {
 		return $response;
 	}
 
-	function redirect_cf7() {
+	static function redirect_cf7() {
 		?>
 		<script type="text/javascript">
 			document.addEventListener('wpcf7mailsent', function (event) {
