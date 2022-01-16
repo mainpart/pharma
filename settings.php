@@ -37,67 +37,66 @@ if ( class_exists( 'CSF' ) ) {
 		'title'  => 'Шаблоны писем, отправляемые пользователям',
 		'fields' => array(
 			array(
-				'id'    => 'email-accept-notification',
-				'type'  => 'code_editor',
-				'title' => 'Получение платежа гомеопатом',
-				'desc'  => 'Отправляется клиенту',
-				'sanitize'=>false,
+				'id'       => 'email-accept-notification',
+				'type'     => 'code_editor',
+				'title'    => 'Получение платежа гомеопатом',
+				'desc'     => 'Отправляется клиенту',
+				'sanitize' => false,
 				'settings' => array(
-					'theme'  => 'monokai',
-					'mode'   => 'php',
+					'theme' => 'monokai',
+					'mode'  => 'php',
 				),
 
 			),
 			array(
-				'id'    => 'email-paidtill-notification',
-				'type'  => 'code_editor',
-				'title' => 'Приближение окончания подписки',
-				'desc'  => 'Отправляется клиенту',
-				'sanitize'=>false,
+				'id'       => 'email-paidtill-notification',
+				'type'     => 'code_editor',
+				'title'    => 'Приближение окончания подписки',
+				'desc'     => 'Отправляется клиенту',
+				'sanitize' => false,
 				'settings' => array(
-					'theme'  => 'monokai',
-					'mode'   => 'php',
+					'theme' => 'monokai',
+					'mode'  => 'php',
 				),
 
 			),
 			array(
-				'id'    => 'email-paidtillend-notification',
-				'type'  => 'code_editor',
-				'title' => 'Окончание подписки',
-				'subtitle'=>'Шаблон используется для отправки пользователю уведомления об окончании доступа',
-				'desc'  => 'Отправляется клиенту',
-				'sanitize'=>false,
+				'id'       => 'email-paidtillend-notification',
+				'type'     => 'code_editor',
+				'title'    => 'Окончание подписки',
+				'subtitle' => 'Шаблон используется для отправки пользователю уведомления об окончании доступа',
+				'desc'     => 'Отправляется клиенту',
+				'sanitize' => false,
 				'settings' => array(
-					'theme'  => 'monokai',
-					'mode'   => 'php',
+					'theme' => 'monokai',
+					'mode'  => 'php',
 				),
 
 			),
 
 			array(
-				'id'    => 'email-paid-notification',
-				'type'  => 'code_editor',
-				'title' => 'Получение платежа',
-				'desc'    => 'Отправляется гомеопату',
-				'sanitize'=>false,
+				'id'       => 'email-paid-notification',
+				'type'     => 'code_editor',
+				'title'    => 'Получение платежа',
+				'desc'     => 'Отправляется гомеопату',
+				'sanitize' => false,
 				'settings' => array(
-					'theme'  => 'monokai',
-					'mode'   => 'php',
+					'theme' => 'monokai',
+					'mode'  => 'php',
 				),
 
 			),
 			array(
-				'id'    => 'order-payment-form',
-				'type'  => 'code_editor',
-				'title' => 'Форма отправки сообщения гомеопату',
-				'sanitize'=>false,
+				'id'       => 'order-payment-form',
+				'type'     => 'code_editor',
+				'title'    => 'Форма отправки сообщения гомеопату',
+				'sanitize' => false,
 				'settings' => array(
-					'theme'  => 'monokai',
-					'mode'   => 'php',
+					'theme' => 'monokai',
+					'mode'  => 'php',
 				),
 
 			),
-
 
 
 		)
@@ -174,6 +173,12 @@ if ( class_exists( 'CSF' ) ) {
 				'desc'     => '',
 				'help'     => '',
 			),
+			array(
+				'id'       => 'trial-duration',
+				'type'     => 'text',
+				'title'    => 'Длительность первоначальной консультации',
+				'subtitle' => 'Указывается в днях',
+			),
 
 		)
 	) );
@@ -181,8 +186,10 @@ if ( class_exists( 'CSF' ) ) {
 	function csf_make_bool( $value ) {
 		return (bool) $value;
 	}
-	function csf_textarea($value){
-		$value = esc_textarea($value);
+
+	function csf_textarea( $value ) {
+		$value = esc_textarea( $value );
+
 		return $value;
 	}
 

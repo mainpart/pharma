@@ -17,7 +17,7 @@ class Curshen {
 		add_action( 'wpcf7_before_send_mail', [ self::class, 'before_send_email' ] );
 		//add_filter( 'modify_form_before_insert_data', [ self::class, 'save_files' ] );
 
-		add_action( 'pharma_user_freeconsult_addmember', [ self::class, 'client_paid_set_meta' ], 10, 2 );
+		add_action( 'pharma_user_freeconsult_addmember', [ self::class, 'client_paid_set_meta' ], 10, 3 );
 		add_action( 'pharma_user_freeconsult_addmember', [ self::class, 'client_paid_add_consultation_page' ], 20, 2 );
 		add_action( 'plugins_loaded', [ self::class, 'textdomain' ] );
 		add_filter( 'wpcf7_verify_nonce', function () {
@@ -206,8 +206,11 @@ class Curshen {
 			}
 
 		}
-
-		do_action( 'pharma_user_freeconsult_addmember', wp_get_current_user()->ID, $doctor->ID );
+		$options = get_option(PHARMA_OPTIONS);
+		if ( !$options['trial-duration'] ) {
+			$options['trial-duration'] = 6;
+		}
+		do_action( 'pharma_user_freeconsult_addmember', wp_get_current_user()->ID, $doctor->ID ,  $options['trial-duration']);
 		if ( $consultation_page_id ) {
 			wp_insert_comment( [ 'user_id' => get_current_user_id(), 'comment_post_ID' => $consultation_page_id, 'comment_content' => $post ] );
 		}
