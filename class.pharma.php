@@ -48,7 +48,7 @@ class Pharma {
 		add_filter( 'preprocess_comment', [ self::class, 'preprocess_comment' ] );
 
 		add_shortcode( 'order_form', [ self::class, 'order_form_shortcode' ] );
-
+		add_shortcode( 'convertation', [ self::class, 'convertation_shortcode' ] );
 		add_action( 'pharma_user_paid_prolong', [ self::class, 'client_paid_prolong_consultation_page' ], 10, 3 );
 		add_action( 'pharma_user_paid_prolong', [ self::class, 'client_approved_notify' ], 20 );
 		add_action( 'pharma_user_paid_prolong', [ self::class, 'client_paid_set_meta' ], 30, 4 );
@@ -85,6 +85,14 @@ class Pharma {
 		add_filter( 'get_comment', [ self::class, 'get_comment' ] );
 		add_action( 'client_paidtill_change', array( self::class, 'client_paidtill_change' ), 10, 3 );
 
+	}
+
+	static function convertation( $atts, $content = null ) {
+		$options = get_option(PHARMA_OPTIONS);
+		if ( !$options['convertation'] ) {
+			$options['convertation'] = 1;
+		}
+		return $atts['amount'] * floatval($options['convertation']);
 	}
 
 	static function wpse63675_pre_posts( $q ) {
@@ -927,6 +935,6 @@ function cm_bump_request_timeout($timeout){
 		//@file_put_contents('debug.txt',"timeout filtered 60\r\n", FILE_APPEND);
 		return 60;
 	}
-	return $timeout;		                              	
+	return $timeout;
 }
 add_filter( 'http_request_timeout',  'cm_bump_request_timeout',10, 1 );
