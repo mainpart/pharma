@@ -87,7 +87,7 @@ class Pharma {
 
 	}
 
-	static function convertation( $atts, $content = null ) {
+	static function convertation_shortcode( $atts, $content = null ) {
 		$options = get_option(PHARMA_OPTIONS);
 		if ( !$options['convertation'] ) {
 			$options['convertation'] = 1;
