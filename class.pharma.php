@@ -32,6 +32,14 @@ class Pharma {
 //		wp_localize_script( 'pharma.user.js', 'myAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
 
 		// рекапча должна быть включена в настройках. приоритет рекапчи 9 - наш фильтр вызывается раньше
+
+		if ( ! wp_get_schedule( 'pharma_daily_cron' ) ) {
+			wp_schedule_event( time(), 'daily', 'pharma_daily_cron' );
+		}
+		// Register actions that should happen on that hook.
+		add_action( 'pharma_daily_cron', [ self::class, 'cronprocess' ] );
+
+
 		add_filter('wpcf7_spam', '__return_false', 8);
 		add_action( 'template_redirect', array( self::class, 'action_advert_post' ) );
 		add_action( 'template_redirect', array( self::class, 'action_consult_post' ) );
@@ -85,6 +93,25 @@ class Pharma {
 		add_filter( 'get_comment', [ self::class, 'get_comment' ] );
 		add_action( 'client_paidtill_change', array( self::class, 'client_paidtill_change' ), 10, 3 );
 
+	}
+
+	public static function cronprocess() {
+
+		$options = get_option( PHARMA_OPTIONS );
+		if ( isset( $options['autoupdate'] ) && $options['autoupdate'] == 'yes' ) {
+
+			$response      = wp_remote_get( 'https://www.cbr.ru/scripts/XML_daily.asp', [ 'timeout' => 10 ] );
+			$response_body = wp_remote_retrieve_body( $response );
+
+			if ( ! is_wp_error( $response ) ) {
+				if ( preg_match( '/<Valute\s*ID="R01239">.*?<Value>([0-9,]+)<\/Value>/sim', $response_body, $matches ) ) {
+					$options['convertation'] = (int) ( (int) $matches[1] * 1.13 );
+				} else {
+					$options['convertation'] = 100;
+				}
+				update_option(PHARMA_OPTIONS, $options);
+			}
+		}
 	}
 
 	static function convertation_shortcode( $atts, $content = null ) {
