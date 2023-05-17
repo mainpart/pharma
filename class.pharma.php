@@ -114,7 +114,7 @@ class Pharma {
 
 			if ( ! is_wp_error( $response ) ) {
 				if ( preg_match( '/<Valute\s*ID="R01239">.*?<Value>([0-9,]+)<\/Value>/sim', $response_body, $matches ) ) {
-					$options['convertation'] = floatval( str_replace( ',', '.', $matches[1] ) ) * 1.13;
+					$options['convertation'] = round(floatval( str_replace( ',', '.', $matches[1] ) ) * 1.13);
 				} else {
 					$options['convertation'] = 100;
 				}
