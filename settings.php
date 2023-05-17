@@ -189,8 +189,7 @@ if ( class_exists( 'CSF' ) ) {
 				'id'       => 'autoupdate',
 				'type'     => 'checkbox',
 				'title'    => 'Автообновление',
-				'label' => 'автоматически обновлять курс евро',
-				'default' => 'yes'
+				'label' => 'автоматически обновлять курс евро'
 			),
 		)
 	) );

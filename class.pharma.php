@@ -13,9 +13,9 @@ class Pharma {
 
 	public static function init() {
 		if ( ! self::$initiated ) {
-			$options = get_option(PHARMA_OPTIONS);
-			self::$advert_category = (int)$options['advert-category'];
-			self::$consult_category = (int)$options['consult-category'];
+			$options                = get_option( PHARMA_OPTIONS );
+			self::$advert_category  = (int) $options['advert-category'];
+			self::$consult_category = (int) $options['consult-category'];
 			self::init_hooks();
 		}
 	}
@@ -40,7 +40,7 @@ class Pharma {
 		add_action( 'pharma_daily_cron', [ self::class, 'cronprocess' ] );
 
 
-		add_filter('wpcf7_spam', '__return_false', 8);
+		add_filter( 'wpcf7_spam', '__return_false', 8 );
 		add_action( 'template_redirect', array( self::class, 'action_advert_post' ) );
 		add_action( 'template_redirect', array( self::class, 'action_consult_post' ) );
 
@@ -84,9 +84,18 @@ class Pharma {
 
 
 		add_filter( 'manage_' . self::ORDER_POST_TYPE . '_posts_columns', array( self::class, 'order_columns' ) );
-		add_action( 'manage_' . self::ORDER_POST_TYPE . '_posts_custom_column', array( self::class, 'order_columns_content' ), 10, 2 );
-		add_filter( 'manage_' . self::CONSULTATION_POST_TYPE . '_posts_columns', array( self::class, 'consultation_columns' ) );
-		add_action( 'manage_' . self::CONSULTATION_POST_TYPE . '_posts_custom_column', array( self::class, 'consultation_columns_content' ), 10, 2 );
+		add_action( 'manage_' . self::ORDER_POST_TYPE . '_posts_custom_column', array(
+			self::class,
+			'order_columns_content'
+		), 10, 2 );
+		add_filter( 'manage_' . self::CONSULTATION_POST_TYPE . '_posts_columns', array(
+			self::class,
+			'consultation_columns'
+		) );
+		add_action( 'manage_' . self::CONSULTATION_POST_TYPE . '_posts_custom_column', array(
+			self::class,
+			'consultation_columns_content'
+		), 10, 2 );
 		add_action( 'admin_head', array( self::class, 'hide_menus' ) );
 		add_filter( 'login_redirect', [ self::class, 'redirect_wrapper' ], 10, 3 );
 		add_action( 'pharma_paidtill_notify', [ self::class, 'action_paidtill_notify' ], 10, 2 );
@@ -98,28 +107,29 @@ class Pharma {
 	public static function cronprocess() {
 
 		$options = get_option( PHARMA_OPTIONS );
-		if ( isset( $options['autoupdate'] ) && $options['autoupdate'] == 'yes' ) {
+		if ( isset( $options['autoupdate'] ) && $options['autoupdate'] == '1' ) {
 
 			$response      = wp_remote_get( 'https://www.cbr.ru/scripts/XML_daily.asp', [ 'timeout' => 10 ] );
 			$response_body = wp_remote_retrieve_body( $response );
 
 			if ( ! is_wp_error( $response ) ) {
 				if ( preg_match( '/<Valute\s*ID="R01239">.*?<Value>([0-9,]+)<\/Value>/sim', $response_body, $matches ) ) {
-					$options['convertation'] = (int) ( (int) $matches[1] * 1.13 );
+					$options['convertation'] = floatval( str_replace( ',', '.', $matches[1] ) ) * 1.13;
 				} else {
 					$options['convertation'] = 100;
 				}
-				update_option(PHARMA_OPTIONS, $options);
+				update_option( PHARMA_OPTIONS, $options );
 			}
 		}
 	}
 
 	static function convertation_shortcode( $atts, $content = null ) {
-		$options = get_option(PHARMA_OPTIONS);
-		if ( !$options['convertation'] ) {
+		$options = get_option( PHARMA_OPTIONS );
+		if ( ! $options['convertation'] ) {
 			$options['convertation'] = 1;
 		}
-		return $atts['amount'] * floatval($options['convertation']);
+
+		return $atts['amount'] * floatval( $options['convertation'] );
 	}
 
 	static function wpse63675_pre_posts( $q ) {
@@ -136,7 +146,7 @@ class Pharma {
 	 * @var $doctor_id int
 	 * @var $time int
 	 */
-	static function  client_paidtill_change( $client_id, $doctor_id, $time ) {
+	static function client_paidtill_change( $client_id, $doctor_id, $time ) {
 		// нужно убрать старый крон
 		$params = [ $client_id, $doctor_id ];
 
@@ -160,18 +170,18 @@ class Pharma {
 		$doctor        = get_user_by( 'ID', $doctor_id );
 		$timestamp     = get_user_meta( $client_id, 'paidtill_' . $doctor_id, true );
 		$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
-		$options = get_option(PHARMA_OPTIONS);
+		$options       = get_option( PHARMA_OPTIONS );
 
 		if ( $timestamp > ( ( time() - 84600 * 3 ) - 1 ) && ( $timestamp > time() ) ) {
 			ob_start();
-			eval('?>'.$options['email-paidtill-notification'].'<?php');
+			eval( '?>' . $options['email-paidtill-notification'] . '<?php' );
 			$message = ob_get_clean();
-			wp_mail( $client->user_email, 'Доступ на сайт Куршен Консультаций ' , $message );
+			wp_mail( $client->user_email, 'Доступ на сайт Куршен Консультаций ', $message );
 		} elseif ( $timestamp - 1 < time() ) {
 			ob_start();
-			eval('?>'.$options['email-paidtillend-notification'].'<?php');
+			eval( '?>' . $options['email-paidtillend-notification'] . '<?php' );
 			$message = ob_get_clean();
-			wp_mail( $client->user_email, 'Ограничение доступа на сайт Куршен Консультации ' , $message );
+			wp_mail( $client->user_email, 'Ограничение доступа на сайт Куршен Консультации ', $message );
 		}
 
 	}
@@ -246,12 +256,13 @@ class Pharma {
 						//wp_die(var_export($query->post_count,true));
 						return get_post_permalink( $redirect );
 					} else {
-						return get_post_type_archive_link( self::CONSULTATION_POST_TYPE);
+						return get_post_type_archive_link( self::CONSULTATION_POST_TYPE );
 					}
 				} else {
 					// у пользователя нет консультаций. куда?
 					$options = get_option( PHARMA_OPTIONS );
-					return get_permalink($options['after-login-page']);
+
+					return get_permalink( $options['after-login-page'] );
 				}
 		}
 
@@ -272,7 +283,12 @@ class Pharma {
 		//global $wp_roles;
 		//$wp_roles->remove_cap( 'author', 'create_posts' );
 		remove_submenu_page( 'edit.php', 'post-new.php' );
-		$allowed = [ 'edit.php', 'edit.php?post_type=' . self::ORDER_POST_TYPE, 'edit.php?post_type=' . self::CONSULTATION_POST_TYPE, 'edit-comments.php', ];
+		$allowed = [
+			'edit.php',
+			'edit.php?post_type=' . self::ORDER_POST_TYPE,
+			'edit.php?post_type=' . self::CONSULTATION_POST_TYPE,
+			'edit-comments.php',
+		];
 		foreach ( $menu as $index => $values ) {
 			if ( ! in_array( $values[2], $allowed ) ) {
 				remove_menu_page( $values[2] );
@@ -532,7 +548,10 @@ class Pharma {
 				$client_id = get_post_meta( $post->ID, 'client_id', true );
 				$doctor_id = get_post_meta( $post->ID, 'doctor_id', true );
 				$user      = wp_get_current_user();
-				if ( ! ( $user->ID && ( in_array( $user->ID, [ $client_id, $doctor_id ] ) || ( current_user_can( 'activate_plugins' ) ) ) ) ) {
+				if ( ! ( $user->ID && ( in_array( $user->ID, [
+							$client_id,
+							$doctor_id
+						] ) || ( current_user_can( 'activate_plugins' ) ) ) ) ) {
 					unset( $posts[ $idx ] );
 				}
 			}
@@ -545,8 +564,8 @@ class Pharma {
 
 	/**
 	 * Смотрим что вернуть - комментарий или заглушку
-	 * @var $comment WP_Comment
 	 * @return WP_Comment
+	 * @var $comment WP_Comment
 	 */
 	public static function get_comment( $comment ) {
 		$post = WP_Post::get_instance( $comment->comment_post_ID );
@@ -574,7 +593,7 @@ class Pharma {
 	/**
 	 * Фильтрация комментариев чтобы никто не видел чужие
 	 */
-	public static  function the_comments( $comments ) {
+	public static function the_comments( $comments ) {
 
 		foreach ( $comments as $idx => $comment ) {
 
@@ -585,7 +604,10 @@ class Pharma {
 				$doctor_id = get_post_meta( $post_id, 'doctor_id', true );
 				$user      = wp_get_current_user();
 
-				if ( ! ( $user && ( in_array( $user->ID, [ $client_id, $doctor_id ] ) || current_user_can( 'activate_plugins' ) ) ) ) {
+				if ( ! ( $user && ( in_array( $user->ID, [
+							$client_id,
+							$doctor_id
+						] ) || current_user_can( 'activate_plugins' ) ) ) ) {
 					unset( $comments[ $idx ] );
 				}
 			}
@@ -611,31 +633,31 @@ class Pharma {
 		global $post;
 		if ( $post->post_type == self::CONSULTATION_POST_TYPE ) {
 
-						$client = get_user_by('ID', $post->client_id);
-						$doctor = get_user_by('ID', $post->doctor_id);
-						$timestamp = get_user_meta($client->ID,'paidtill_'.$post->doctor_id,true);
-						if ($timestamp) {
-							$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
-							$template.="<h4>Абонемент открыт до " . $date_time_obj->format( "Y-m-d" ) . "</h4>";
-							if (shortcode_exists('tminus')) {
-								$template.=do_shortcode("[tminus  t='{$date_time_obj->format( "Y/m/d" )}'/]");
-							}
-						}
+			$client    = get_user_by( 'ID', $post->client_id );
+			$doctor    = get_user_by( 'ID', $post->doctor_id );
+			$timestamp = get_user_meta( $client->ID, 'paidtill_' . $post->doctor_id, true );
+			if ( $timestamp ) {
+				$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
+				$template      .= "<h4>Абонемент открыт до " . $date_time_obj->format( "Y-m-d" ) . "</h4>";
+				if ( shortcode_exists( 'tminus' ) ) {
+					$template .= do_shortcode( "[tminus  t='{$date_time_obj->format( "Y/m/d" )}'/]" );
+				}
+			}
 
-						$query = new WP_Query([
-							'meta_query'=>[
-								'relation'=>'AND',
-								[
-									'key'=>'doctor_id',
-									'value'=>$doctor->ID,
+			$query = new WP_Query( [
+				'meta_query' => [
+					'relation' => 'AND',
+					[
+						'key'   => 'doctor_id',
+						'value' => $doctor->ID,
 
-								],
-							],
-							'cat'=>self::$advert_category
-						]);
-						wp_reset_postdata();
+					],
+				],
+				'cat'        => self::$advert_category
+			] );
+			wp_reset_postdata();
 
-						$template.= "<h4><a href='".get_permalink($query->post)."'>{$doctor->display_name}</a> - {$client->display_name}</h4>";
+			$template .= "<h4><a href='" . get_permalink( $query->post ) . "'>{$doctor->display_name}</a> - {$client->display_name}</h4>";
 
 
 		}
@@ -693,8 +715,8 @@ class Pharma {
 
 		ob_start();
 		$consultation_post_id = self::get_consultation_page( $doctor_id, $client_id );
-		$options = get_option(PHARMA_OPTIONS);
-		eval('?>'.$options['email-accept-notification'].'<?php');
+		$options              = get_option( PHARMA_OPTIONS );
+		eval( '?>' . $options['email-accept-notification'] . '<?php' );
 		$message = ob_get_clean();
 		wp_mail( $user->user_email, 'Уведомление об открытии доступа ' . $doctor->display_name, $message );
 	}
@@ -709,12 +731,12 @@ class Pharma {
 		$id     = self::get_consultation_page( $doctor_id, $client_id );
 		if ( ! $check_exist || ! $id ) {
 			$id     = wp_insert_post( [
-				'post_author' => $doctor_id,
-				'post_title'  => $client->display_name . " - личный кабинет",
-				'post_type'   => self::CONSULTATION_POST_TYPE,
-				'post_content'=>'[access capability="switch_themes"] *** [/access]',
-				'post_status' => 'publish',
-				'cat'         => self::$consult_category
+				'post_author'  => $doctor_id,
+				'post_title'   => $client->display_name . " - личный кабинет",
+				'post_type'    => self::CONSULTATION_POST_TYPE,
+				'post_content' => '[access capability="switch_themes"] *** [/access]',
+				'post_status'  => 'publish',
+				'cat'          => self::$consult_category
 			] );
 			$insert = $wpdb->prepare( "(%s, %d, %d, 0, 'asap', %s, %s, %s, 'subscribed', %d)", 'k' . strtolower( substr( md5( time() . $doctor_id ), 0, 18 ) ), $client_id, $id,
 				$client->first_name, $client->last_name, $client->user_email, time() );
@@ -757,14 +779,16 @@ class Pharma {
 		) {
 			$doctor_id = $post->post_author;
 			ob_start();
-			$options = get_option(PHARMA_OPTIONS);
-			eval('?>'.$options['order-payment-form'].'<?php');
+			$options = get_option( PHARMA_OPTIONS );
+			eval( '?>' . $options['order-payment-form'] . '<?php' );
+
 			return ob_get_clean();
 		} else {
 			$category = get_the_category_by_ID( self::$advert_category );
-			if (is_wp_error($category)) {
+			if ( is_wp_error( $category ) ) {
 				return 'Ошибка поиска категории';
 			}
+
 			return 'Данная форма может располагаться только в записях из категории ' . $category;
 		}
 	}
@@ -796,11 +820,11 @@ class Pharma {
 		update_post_meta( $order_id, 'doctor_id', $doctor_id );
 		update_post_meta( $order_id, 'client_id', $user->ID );
 		ob_start();
-		$options = get_option(PHARMA_OPTIONS);
-		eval('?>'.$options['email-paid-notification'].'<?php');
+		$options = get_option( PHARMA_OPTIONS );
+		eval( '?>' . $options['email-paid-notification'] . '<?php' );
 		$message = ob_get_clean();
 		wp_mail( $doctor->user_email, 'Уведомление о подписке пользователя' . $user->display_name, $message );
-		wp_redirect( get_permalink($options['payment-page']), 301 );
+		wp_redirect( get_permalink( $options['payment-page'] ), 301 );
 	}
 
 
@@ -957,11 +981,13 @@ class Pharma {
 }
 
 
-function cm_bump_request_timeout($timeout){
-	if ( isset( $_REQUEST['comment_mail'] )){
+function cm_bump_request_timeout( $timeout ) {
+	if ( isset( $_REQUEST['comment_mail'] ) ) {
 		//@file_put_contents('debug.txt',"timeout filtered 60\r\n", FILE_APPEND);
 		return 60;
 	}
+
 	return $timeout;
 }
-add_filter( 'http_request_timeout',  'cm_bump_request_timeout',10, 1 );
+
+add_filter( 'http_request_timeout', 'cm_bump_request_timeout', 10, 1 );

@@ -7,7 +7,7 @@
    GitHub Plugin URI: https://github.com/mainpart/pharma
    Primary Branch: main
    Domain Path: /language
-   Version: 1.0.8
+   Version: 1.0.9
    Description: Плагин для организации консультаций
 */
 
