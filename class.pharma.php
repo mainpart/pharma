@@ -109,14 +109,11 @@ class Pharma {
 		$options = get_option( PHARMA_OPTIONS );
 		if ( isset( $options['autoupdate'] ) && $options['autoupdate'] == '1' ) {
 
-			$response      = wp_remote_get( 'https://www.cbr.ru/scripts/XML_daily.asp', [ 'timeout' => 10 ] );
+			$response      = wp_remote_get( 'https://www.cbr-xml-daily.ru/daily.xml', [ 'timeout' => 10 ] );
 			$response_body = wp_remote_retrieve_body( $response );
-
 			if ( ! is_wp_error( $response ) ) {
 				if ( preg_match( '/<Valute\s*ID="R01239">.*?<Value>([0-9,]+)<\/Value>/sim', $response_body, $matches ) ) {
 					$options['convertation'] = round(floatval( str_replace( ',', '.', $matches[1] ) ) * 1.13);
-				} else {
-					$options['convertation'] = 100;
 				}
 				update_option( PHARMA_OPTIONS, $options );
 			}
