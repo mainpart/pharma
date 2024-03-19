@@ -54,6 +54,7 @@ class Pharma {
 		add_action( 'admin_post_nopriv_paid_notification', [ self::class, 'order_paid_notification' ] );
 
 		add_filter( 'preprocess_comment', [ self::class, 'preprocess_comment' ] );
+        add_action('insert_scheduled_comment', [ self::class,'insert_scheduled_comment']);
 
 		add_shortcode( 'order_form', [ self::class, 'order_form_shortcode' ] );
 		add_shortcode( 'convertation', [ self::class, 'convertation_shortcode' ] );
@@ -69,6 +70,7 @@ class Pharma {
 		add_action( 'pre_get_posts', [ self::class, 'wpse63675_pre_posts' ] );
 
 		add_filter( 'the_content', [ self::class, 'consultation_template' ] );
+        add_filter('comment_form', [ self::class, 'my_custom_comment_form_field']);
 
 		add_action( 'wp_insert_comment', [ self::class, 'comment_insert' ], 10, 2 );
 		add_action( 'the_comments', [ self::class, 'the_comments' ], 10, 1 );
@@ -119,6 +121,17 @@ class Pharma {
 			}
 		}
 	}
+    static function my_custom_comment_form_field() {
+            // Ваш код для вывода поля
+            if (current_user_can( 'activate_plugins' )) {
+                echo '<div class="postone-field">'.
+                '<label for="postone_field">Опубликовать комментарий через:'.
+                '<input name="postone_hr" placeholder="0,1,2..." size="3"> часов и <input name="postone" placeholder="0,1,2..." size="3"> дней</label>'.
+                '</div>';
+            }
+
+    }
+
 
 	static function convertation_shortcode( $atts, $content = null ) {
 		$options = get_option( PHARMA_OPTIONS );
@@ -200,9 +213,31 @@ class Pharma {
 				$comment_data['comment_author'] = $user->display_name;
 			}
 		}
+        // делаем отложенное обновление
+        if (is_numeric($_REQUEST['postone'])|| is_numeric($_REQUEST['postone_hr'])){
+            wp_schedule_single_event(time() + (int)$_REQUEST['postone']*86400  + (int)$_REQUEST['postone_hr']*3600, 'insert_scheduled_comment', array($comment_data));
+            wp_redirect(get_permalink($comment_data["comment_post_ID"]));
+            die();
+        }
 
 		return $comment_data;
 	}
+
+    function insert_scheduled_comment($comment_data) {
+        // Проверяем, что данные комментария переданы
+        if (is_array($comment_data) && !empty($comment_data)) {
+            // Вставляем комментарий в базу данных
+            $comment_id = wp_new_comment($comment_data, true);
+
+            if (is_wp_error($comment_id)) {
+                // Обработка ошибки
+                error_log($comment_id->get_error_message());
+            } else {
+                // Комментарий успешно вставлен
+                // Здесь можно добавить дополнительные действия, например, отправку уведомления
+            }
+        }
+    }
 
 	/**
 	 * Переадресация пользователя после логина в зависимости от его ролей
@@ -618,12 +653,8 @@ class Pharma {
 	 * @var $comment WP_Comment
 	 */
 	public static function comment_insert( $id, $comment ) {
-		//$post = get_post($comment->comment_post_ID);
-		//wp_die(var_dump($post,$comment));
-		//$comment->comment_approved = 1;
 		wp_set_comment_status( $id, 'approve' );
-		//return $comment;
-	}
+    }
 
 
 	public static function consultation_template( $template ) {
