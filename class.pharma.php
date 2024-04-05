@@ -214,8 +214,8 @@ class Pharma {
 			}
 		}
         // делаем отложенное обновление
-        if (is_numeric($_REQUEST['postone'])|| is_numeric($_REQUEST['postone_hr'])){
-            wp_schedule_single_event(time() + (int)$_REQUEST['postone']*86400  + (int)$_REQUEST['postone_hr']*3600, 'insert_scheduled_comment', array($comment_data));
+        if ((((int)$_REQUEST['postone'])*86400  + ((int)$_REQUEST['postone_hr'])*3600)>0){
+            wp_schedule_single_event(time() + ((int)$_REQUEST['postone'])*86400  + ((int)$_REQUEST['postone_hr'])*3600, 'insert_scheduled_comment', array($comment_data));
             wp_redirect(get_permalink($comment_data["comment_post_ID"]));
             die();
         }
