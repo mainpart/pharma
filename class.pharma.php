@@ -72,7 +72,7 @@ class Pharma {
 		add_filter( 'the_content', [ self::class, 'consultation_template' ] );
         add_filter('comment_form', [ self::class, 'my_custom_comment_form_field']);
 
-		add_action( 'wp_insert_comment', [ self::class, 'comment_insert' ], 10, 2 );
+		//add_action( 'wp_insert_comment', [ self::class, 'comment_insert' ], 10, 2 );
 		add_action( 'the_comments', [ self::class, 'the_comments' ], 10, 1 );
 		//add_action ('pre_get_posts',[self::class,'filter_posts']);
 		add_filter( 'posts_results', [ self::class, 'posts_results' ] );
@@ -215,7 +215,13 @@ class Pharma {
 		}
         // делаем отложенное обновление
         if ((((int)$_REQUEST['postone'])*86400  + ((int)$_REQUEST['postone_hr'])*3600)>0){
-            wp_schedule_single_event(time() + ((int)$_REQUEST['postone'])*86400  + ((int)$_REQUEST['postone_hr'])*3600, 'insert_scheduled_comment', array($comment_data));
+            // пробуем 5 раз
+            $i=0;
+            $schedule=time() + ((int)$_REQUEST['postone'])*86400  + ((int)$_REQUEST['postone_hr'])*3600;
+            while((wp_get_scheduled_event('insert_scheduled_comment', array($comment_data), $schedule)==false) && ($i<5)){
+                $i++;
+                wp_schedule_single_event($schedule, 'insert_scheduled_comment', array($comment_data));
+            }
             wp_redirect(get_permalink($comment_data["comment_post_ID"]));
             die();
         }
@@ -248,8 +254,7 @@ class Pharma {
 		if ( ! isset( $user->user_login ) ) {
 			return $redirect_to;
 		}
-		//$caps = $user->get_role_caps();
-
+		if(isset($requested_redirect_to)) return $requested_redirect_to;
 		switch ( true ) {
 			case $user->has_cap( 'activate_plugins' ):
 				return $redirect_to;
@@ -636,12 +641,10 @@ class Pharma {
 				$doctor_id = get_post_meta( $post_id, 'doctor_id', true );
 				$user      = wp_get_current_user();
 
-				if ( ! ( $user && ( in_array( $user->ID, [
-							$client_id,
-							$doctor_id
-						] ) || current_user_can( 'activate_plugins' ) ) ) ) {
-					unset( $comments[ $idx ] );
-				}
+				if (wp_doing_cron()) continue;
+				if (current_user_can( 'activate_plugins' )) continue;
+				if (!$user  || !in_array( $user->ID, [ $client_id, $doctor_id ] ) )unset( $comments[ $idx ] );
+
 			}
 		}
 

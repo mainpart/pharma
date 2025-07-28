@@ -7,7 +7,7 @@
    GitHub Plugin URI: https://github.com/mainpart/pharma
    Primary Branch: main
    Domain Path: /language
-   Version: 1.0.12
+   Version: 1.0.17
    Description: Плагин для организации консультаций
 */
 
@@ -35,5 +35,50 @@ require_once( PHARMA__PLUGIN_DIR . "/sidebar.php" );
 Pharma::init();
 Curshen::init();
 
-
 remove_filter( 'template_redirect', 'redirect_canonical' );
+
+add_action('admin_bar_menu', 'add_client_posts_to_admin_bar', 100);
+
+function add_client_posts_to_admin_bar($wp_admin_bar) {
+    if (!is_user_logged_in()) {
+        return;
+    }
+
+
+    if (!is_user_logged_in()) {
+        return;
+    }
+
+    $current_user_id = get_current_user_id();
+
+    $args = array(
+        'post_type'      => Pharma::CONSULTATION_POST_TYPE,
+        'posts_per_page' => -1,
+        'meta_query'     => array(
+            array(
+                'key'   => 'client_id',
+                'value' => $current_user_id,
+            ),
+        ),
+    );
+
+    $posts = get_posts($args);
+
+    if (empty($posts)) {
+        return;
+    }
+
+    foreach ($posts as $post) {
+        $wp_admin_bar->add_node(array(
+            'id'     => 'client_post_' . $post->ID,
+            'title'  => $post->post_title,
+            'parent' => 'user-actions',
+            'href'   => get_permalink($post),
+            'meta'   => array(
+    		'class' => 'client-post-link',
+		'order' => 1, // lower than default (defaults are usually 10+)
+          	),
+        ));
+    }
+
+}
