@@ -200,12 +200,18 @@ class Pharma {
 		$date_time_obj = DateTime::createFromFormat( "U", $timestamp );
 		$options       = get_option( PHARMA_OPTIONS );
 
-		if ( $timestamp > ( ( time() - 84600 * 3 ) - 1 ) && ( $timestamp > time() ) ) {
+		// Исправленная логика уведомлений
+		$current_time = time();
+		$three_days_from_now = $current_time + ( 86400 * 3 ) + 1;
+		
+		if ( $timestamp > $current_time && $timestamp <= $three_days_from_now ) {
+			// Первое уведомление: за 3 дня до окончания доступа
 			ob_start();
 			eval( '?>' . $options['email-paidtill-notification'] . '<?php' );
 			$message = ob_get_clean();
 			wp_mail( $client->user_email, 'Доступ на сайт Куршен Консультаций ', $message );
-		} elseif ( $timestamp - 1 < time() ) {
+		} elseif ( $timestamp <= $current_time ) {
+			// Второе уведомление: доступ уже закончился
 			ob_start();
 			eval( '?>' . $options['email-paidtillend-notification'] . '<?php' );
 			$message = ob_get_clean();
