@@ -1,8 +1,18 @@
 <?php
 
+/**
+ * Класс для обработки форм Contact Form 7
+ * 
+ * Обрабатывает отправку форм консультаций и создание пробных консультаций
+ */
 class Curshen {
 	private static $initiated = false;
 
+	/**
+	 * Инициализация класса
+	 * 
+	 * Запускает инициализацию хуков для обработки форм CF7
+	 */
 	public static function init() {
 		if ( ! self::$initiated ) {
 			self::init_hooks();
@@ -10,7 +20,9 @@ class Curshen {
 	}
 
 	/**
-	 * Initializes WordPress hooks
+	 * Инициализация хуков WordPress
+	 * 
+	 * Регистрирует обработчики форм Contact Form 7 и сопутствующие фильтры
 	 */
 	public static function init_hooks() {
 		self::$initiated = true;
@@ -34,6 +46,14 @@ class Curshen {
 		load_plugin_textdomain( 'pharma', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
 
+	/**
+	 * Заполнение тегов в формах CF7
+	 * 
+	 * Автоматически заполняет скрытые поля и списки выбора для консультаций
+	 * 
+	 * @param array $tag Объект тега CF7
+	 * @return array Модифицированный тег
+	 */
 	static function fill_tags( $tag ) {
 		if (is_admin()) return $tag;
 		$options = get_option(PHARMA_OPTIONS);
@@ -149,6 +169,13 @@ class Curshen {
 		}
 	}
 
+	/**
+	 * Обработка отправки форм консультаций
+	 * 
+	 * Определяет врача, создаёт консультацию и отправляет комментарий
+	 * 
+	 * @param WPCF7_ContactForm $contact_form Объект контактной формы
+	 */
 	public static function before_send_email( $contact_form ) {
 		$submission = WPCF7_Submission::get_instance();
 		// если не установлено поле is_consult или пользователь не зареган - это не консультация

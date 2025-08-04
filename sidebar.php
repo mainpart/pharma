@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Виджет консультаций для сайдбара
+ * 
+ * Отображает информацию о враче на страницах консультаций
+ */
 class PharmaWidget extends WP_Widget {
 
 	function __construct() {
@@ -22,6 +27,14 @@ class PharmaWidget extends WP_Widget {
 		'after_widget'  => '</div></div>'
 	);
 
+	/**
+	 * Отображение виджета
+	 * 
+	 * Формирует ссылки на анкету и страницу врача
+	 * 
+	 * @param array $args Параметры виджета
+	 * @param array $instance Настройки виджета
+	 */
 	public function widget( $args, $instance ) {
 		global $post;
 		if ($post->post_type !== Pharma::CONSULTATION_POST_TYPE) return;
@@ -58,6 +71,11 @@ class PharmaWidget extends WP_Widget {
 
 	}
 
+	/**
+	 * Форма настройки виджета в админке
+	 * 
+	 * @param array $instance Текущие настройки виджета
+	 */
 	public function form( $instance ) {
 
 		$title = ! empty( $instance['title'] ) ? $instance['title'] : esc_html__( '', 'text_domain' );
@@ -75,6 +93,13 @@ class PharmaWidget extends WP_Widget {
 
 	}
 
+	/**
+	 * Обновление настроек виджета
+	 * 
+	 * @param array $new_instance Новые настройки
+	 * @param array $old_instance Старые настройки
+	 * @return array Обновлённые настройки
+	 */
 	public function update( $new_instance, $old_instance ) {
 
 		$instance = array();

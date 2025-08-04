@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Основной класс плагина Pharma для организации консультаций
+ * 
+ * Управляет системой платных консультаций между врачами и пациентами,
+ * включая создание постов, обработку платежей и контроль доступа.
+ */
 class Pharma {
 	public static int $advert_category;
 	public static int $consult_category;
@@ -11,6 +17,11 @@ class Pharma {
 
 	private static bool $initiated = false;
 
+	/**
+	 * Инициализация плагина
+	 * 
+	 * Загружает настройки категорий и инициализирует хуки WordPress
+	 */
 	public static function init() {
 		if ( ! self::$initiated ) {
 			$options                = get_option( PHARMA_OPTIONS );
@@ -21,7 +32,9 @@ class Pharma {
 	}
 
 	/**
-	 * Initializes WordPress hooks
+	 * Инициализация хуков WordPress
+	 * 
+	 * Регистрирует все необходимые действия и фильтры для работы плагина
 	 */
 	public static function init_hooks() {
 		self::$initiated = true;
@@ -106,6 +119,11 @@ class Pharma {
 
 	}
 
+	/**
+	 * Обработка ежедневных cron задач
+	 * 
+	 * Автоматическое обновление курса валют с ЦБ РФ если включено в настройках
+	 */
 	public static function cronprocess() {
 
 		$options = get_option( PHARMA_OPTIONS );
@@ -197,7 +215,12 @@ class Pharma {
 	}
 
 	/**
-	 * Делаем так чтобы имя пользователя в комментарии соответствовало не email'у но display_name
+	 * Предобработка комментариев
+	 * 
+	 * Обрабатывает комментарии из email, устанавливает отложенную публикацию и корректирует имя автора
+	 * 
+	 * @param array $comment_data Данные комментария
+	 * @return array Обработанные данные комментария
 	 */
 	static function preprocess_comment( $comment_data ) {
 
@@ -248,7 +271,10 @@ class Pharma {
 	/**
 	 * Переадресация пользователя после логина в зависимости от его ролей
 	 *
-	 * @param WP_User $user
+	 * @param string $redirect_to URL для переадресации по умолчанию
+	 * @param string $requested_redirect_to Запрошенный URL переадресации
+	 * @param WP_User $user Объект пользователя
+	 * @return string URL для переадресации
 	 */
 	static function redirect_wrapper( $redirect_to, $requested_redirect_to, $user ) {
 		if ( ! isset( $user->user_login ) ) {
@@ -308,7 +334,9 @@ class Pharma {
 
 
 	/**
-	 * Прячет меню в админке для всех кроме докторов
+	 * Скрывает неразрешенные пункты меню в админке
+	 * 
+	 * Ограничивает доступ к разделам админки для пользователей без прав администратора
 	 */
 	static function hide_menus() {
 		global $menu;
@@ -333,6 +361,11 @@ class Pharma {
 		}
 	}
 
+	/**
+	 * Регистрация пользовательских типов постов
+	 * 
+	 * Создает типы постов 'orderz' (платежи) и 'consultation' (консультации)
+	 */
 	static function create_post_type() {
 
 		// убираем возможность редактирования
@@ -660,6 +693,14 @@ class Pharma {
     }
 
 
+	/**
+	 * Дополняет шаблон страницы консультации
+	 * 
+	 * Добавляет информацию о сроке действия абонемента и ссылку на врача
+	 * 
+	 * @param string $template Оригинальный контент
+	 * @return string Модифицированный контент
+	 */
 	public static function consultation_template( $template ) {
 		global $post;
 		if ( $post->post_type == self::CONSULTATION_POST_TYPE ) {
@@ -726,6 +767,16 @@ class Pharma {
 		update_post_meta( $order_id, 'paid_status', 1 );
 	}
 
+	/**
+	 * Установка метаданных об оплате клиента
+	 * 
+	 * Обновляет срок действия оплаченного доступа для клиента
+	 * 
+	 * @param int $order_id ID заказа
+	 * @param int $client_id ID клиента
+	 * @param int $doctor_id ID врача
+	 * @param int $days Количество дней для продления
+	 */
 	public static function client_paid_set_meta( $order_id, $client_id, $doctor_id, $days = 42 ) {
 		$paid_metakey = 'paidtill_' . $doctor_id;
 		$time         = get_user_meta( $client_id, $paid_metakey, true );
@@ -825,7 +876,9 @@ class Pharma {
 	}
 
 	/**
-	 * Вызывается когда пользователь нажал кнопку "я оплатил"
+	 * Обработка уведомления об оплате
+	 * 
+	 * Обрабатывает форму уведомления о платеже, создаёт заказ и отправляет email врачу
 	 */
 	public static function order_paid_notification() {
 		if ( ! wp_verify_nonce( $_POST['pharma-order-nonce'], 'order-form' ) ) {
@@ -954,7 +1007,9 @@ class Pharma {
 	}
 
 	/**
-	 * Смотрим что делать если мы перешли на рекламную страницу
+	 * Контроль доступа к страницам консультаций
+	 * 
+	 * Проверяет права доступа к консультациям и переадресовывает неавторизованных пользователей
 	 */
 	public static function action_consult_post() {
 		global $wp_query, $post;

@@ -7,11 +7,13 @@
    GitHub Plugin URI: https://github.com/mainpart/pharma
    Primary Branch: main
    Domain Path: /language
-   Version: 1.0.17
+   Version: 1.0.18
    Description: Плагин для организации консультаций
 */
 
-// Make sure we don't expose any info if called directly
+/**
+ * Защита от прямого доступа к файлу
+ */
 if ( ! function_exists( 'add_action' ) ) {
 	echo 'Hi there!  I\'m just a plugin, not much I can do when called directly.';
 	exit;
@@ -39,6 +41,13 @@ remove_filter( 'template_redirect', 'redirect_canonical' );
 
 add_action('admin_bar_menu', 'add_client_posts_to_admin_bar', 100);
 
+/**
+ * Добавляет ссылки на консультации клиента в админ бар
+ *
+ * Отображает в админ-панели ссылки на консультации текущего пользователя
+ *
+ * @param WP_Admin_Bar $wp_admin_bar Объект админ-бара WordPress
+ */
 function add_client_posts_to_admin_bar($wp_admin_bar) {
     if (!is_user_logged_in()) {
         return;
