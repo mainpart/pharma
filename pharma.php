@@ -40,6 +40,13 @@ Curshen::init();
 remove_filter( 'template_redirect', 'redirect_canonical' );
 
 add_action('admin_bar_menu', 'add_client_posts_to_admin_bar', 100);
+add_action('comment_form_after', 'addtg', 100);
+
+function addtg(){
+	?>
+	<p style="display: block; padding:15px; background-color:#ffe; border-radius: 10px; border:1px solid black;">Вы можете получать уведомления о появившихся комментариях и отвечать на них через <a href="https://t.me/curshen_bot">telegram</a> бота.</p>
+<?php
+}
 
 /**
  * Добавляет ссылки на консультации клиента в админ бар
